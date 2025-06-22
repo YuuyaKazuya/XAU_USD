@@ -212,10 +212,30 @@ if st.sidebar.button("Run Forecast"):
         width=1200,
         plot_bgcolor='white',  # Ensures the background of the plot itself is white
         paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
-        font=dict(
-            family="Arial, sans-serif",  # Set font family
-            size=12,  # Set font size
-            color="black"  # Set text color to black
+        title_font=dict(
+            family="Arial, sans-serif",  # Set font family for title
+            size=20,  # Set font size for title
+            color="black"  # Set title text color to black
+        ),
+        xaxis_title_font=dict(
+            family="Arial, sans-serif",  # Set font family for x-axis title
+            size=14,  # Set font size for x-axis title
+            color="black"  # Set x-axis title text color to black
+        ),
+        yaxis_title_font=dict(
+            family="Arial, sans-serif",  # Set font family for y-axis title
+            size=14,  # Set font size for y-axis title
+            color="black"  # Set y-axis title text color to black
+        ),
+        legend_title_font=dict(
+            family="Arial, sans-serif",  # Set font family for legend title
+            size=14,  # Set font size for legend title
+            color="black"  # Set legend title text color to black
+        ),
+        legend_font=dict(
+            family="Arial, sans-serif",  # Set font family for legend items
+            size=12,  # Set font size for legend items
+            color="black"  # Set legend text color to black
         ),
         xaxis=dict(
             rangeselector=dict(
@@ -227,17 +247,11 @@ if st.sidebar.button("Run Forecast"):
                 ])
             ),
             rangeslider=dict(visible=True),
-            type="date"
+            type="date",
+            title_font=dict(color="black")  # Ensures the x-axis title is black
         ),
         yaxis=dict(
-            title=dict(
-                text="Price",  # Ensures the y-axis title is in black
-                font=dict(color="black")  # Black color for the y-axis title
-            )
-        ),
-        xaxis_title=dict(
-            text="Date",  # Ensures the x-axis title is in black
-            font=dict(color="black")  # Black color for the x-axis title
+            title_font=dict(color="black")  # Ensures the y-axis title is black
         )
     )
 
