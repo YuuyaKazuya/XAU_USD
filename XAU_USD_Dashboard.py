@@ -203,7 +203,6 @@ if st.sidebar.button("Run Forecast"):
 
     fig.update_layout(
             title='📊 Actual vs Predicted XAU/USD Price Movements',
-            title_x=0.2,  # Centers the title
             xaxis_title='Date',
             yaxis_title='Price',
             legend_title='Model',
