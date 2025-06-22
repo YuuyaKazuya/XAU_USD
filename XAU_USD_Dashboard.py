@@ -40,6 +40,7 @@ if uploaded_file:
     df1 = pd.read_csv(uploaded_file)
     st.subheader("Uploaded Data")
     st.dataframe(df1.head())
+    st.dataframe(df1.tail())
 
     # Store the uploaded dataset in session_state for further processing
     st.session_state.df1 = df1
