@@ -110,15 +110,13 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_A_D'] = df1_cleaned['A_D'].diff().apply(lambda x: 1 if x > 0 else -1)
     df1_cleaned['Trend_CCI'] = df1_cleaned['CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
 
-    st.subheader("Data with Trends")
-    # Select the relevant columns for displaying trends
     df_trend = df1_cleaned[['Date', 'Trend_Close', 
                             'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
                             'Trend_StochasticK', 'Trend_StochasticD', 'Trend_RSI', 
                             'Trend_MACD', 'Trend_WilliamsR', 'Trend_A_D', 'Trend_CCI']]
 
     # Display the trend data table
-    st.subheader("Trend Data Only (No Predictions)")
+    st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
 # Run predictions for all models
