@@ -52,32 +52,32 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
 
     # Calculate technical indicators
-    df1['Trend_SMA'] = df1['Close'].rolling(window=14).mean()
-    df1['Trend_WMA'] = df1['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
-    df1['Trend_Momentum'] = df1['Close'].diff(4)
+    df1['SMA'] = df1['Close'].rolling(window=14).mean()
+    df1['WMA'] = df1['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
+    df1['Momentum'] = df1['Close'].diff(4)
 
     high_14 = df1['High'].rolling(window=14).max()
     low_14 = df1['Low'].rolling(window=14).min()
-    df1['Trend_StochasticK'] = (df1['Close'] - low_14) / (high_14 - low_14) * 100
-    df1['Trend_StochasticD'] = df1['Trend_StochasticK'].rolling(window=3).mean()
+    df1['StochasticK'] = (df1['Close'] - low_14) / (high_14 - low_14) * 100
+    df1['StochasticD'] = df1['StochasticK'].rolling(window=3).mean()
 
     delta = df1['Close'].diff(1)
     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
     rs = gain / loss
-    df1['Trend_RSI'] = 100 - (100 / (1 + rs))
+    df1['RSI'] = 100 - (100 / (1 + rs))
 
-    df1['Trend_MACD'] = df1['Close'].ewm(span=12, adjust=False).mean() - df1['Close'].ewm(span=26, adjust=False).mean()
-    df1['Trend_MACD_signal'] = df1['Trend_MACD'].ewm(span=9, adjust=False).mean()
+    df1['MACD'] = df1['Close'].ewm(span=12, adjust=False).mean() - df1['Close'].ewm(span=26, adjust=False).mean()
+    df1['MACD_signal'] = df1['MACD'].ewm(span=9, adjust=False).mean()
 
-    df1['Trend_WilliamsR'] = (high_14 - df1['Close']) / (high_14 - low_14) * -100
-    df1['Trend_A_D'] = df1['High'].diff(1) - df1['Low'].diff(1)
-    df1['Trend_A_D'] = df1['Trend_A_D'].rolling(window=14).mean()
+    df1['WilliamsR'] = (high_14 - df1['Close']) / (high_14 - low_14) * -100
+    df1['A_D'] = df1['High'].diff(1) - df1['Low'].diff(1)
+    df1['A_D'] = df1['A_D'].rolling(window=14).mean()
 
     tp = (df1['High'] + df1['Low'] + df1['Close']) / 3
     sma_tp = tp.rolling(window=14).mean()
     mean_deviation = (tp - sma_tp).abs().rolling(window=14).mean()
-    df1['Trend_CCI'] = (tp - sma_tp) / (0.015 * mean_deviation)
+    df1['CCI'] = (tp - sma_tp) / (0.015 * mean_deviation)
 
     st.success("✅ Technical Indicators Generated!")
 
@@ -96,16 +96,16 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     # Convert other technical indicators into trends
-    df1_cleaned['Trend_SMA'] = df1_cleaned['Trend_SMA'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_WMA'] = df1_cleaned['Trend_WMA'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_Momentum'] = df1_cleaned['Trend_Momentum'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_StochasticK'] = df1_cleaned['Trend_StochasticK'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_StochasticD'] = df1_cleaned['Trend_StochasticD'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_RSI'] = df1_cleaned['Trend_RSI'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_MACD'] = df1_cleaned['Trend_MACD'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_WilliamsR'] = df1_cleaned['Trend_WilliamsR'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_A_D'] = df1_cleaned['Trend_A_D'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_CCI'] = df1_cleaned['Trend_CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_SMA'] = df1_cleaned['SMA'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_WMA'] = df1_cleaned['WMA'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_Momentum'] = df1_cleaned['Momentum'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_StochasticK'] = df1_cleaned['StochasticK'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_StochasticD'] = df1_cleaned['StochasticD'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_RSI'] = df1_cleaned['RSI'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_MACD'] = df1_cleaned['MACD'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_WilliamsR'] = df1_cleaned['WilliamsR'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_A_D'] = df1_cleaned['A_D'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_CCI'] = df1_cleaned['CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     st.subheader("Data with Trends")
     st.dataframe(df1_cleaned.head())
