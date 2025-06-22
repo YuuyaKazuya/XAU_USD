@@ -207,9 +207,11 @@ if st.sidebar.button("Run Forecast"):
         yaxis_title='Price',
         legend_title='Model',
         hovermode='x unified',
-        template='plotly_white',
+        template='plotly_white',  # This sets the plot background to white
         height=800,
         width=1200,
+        plot_bgcolor='white',  # Ensures the background of the plot itself is white
+        paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
