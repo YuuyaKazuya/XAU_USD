@@ -91,7 +91,7 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     st.session_state.df1_cleaned = df1_cleaned
 
     st.subheader("Cleaned Data with Technical Indicators")
-    st.dataframe(df1_cleaned.head())
+    st.dataframe(df1_cleaned.head(50))
 
 # Convert Close Price into Trend (Up/Down)
 if 'df1_cleaned' in st.session_state:
@@ -111,7 +111,7 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_CCI'] = df1_cleaned['CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     st.subheader("Data with Trends")
-    st.dataframe(df1_cleaned.head())
+    st.dataframe(df1_cleaned.head(50))
 
 # Run predictions for all models
 if st.sidebar.button("Run Forecast"):
