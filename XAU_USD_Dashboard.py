@@ -21,9 +21,9 @@ The models predict future price movements based on historical data and technical
 """)
 
 # Load the pre-trained models
-lgb_model_path = "C:/Users/hakim/Desktop/xau_usd_forecast/best_lgb_discrete.pkl"
-rf_model_path = "C:/Users/hakim/Desktop/xau_usd_forecast/best_rf_discrete.pkl"
-svm_model_path = "C:/Users/hakim/Desktop/xau_usd_forecast/best_svm_discrete.pkl"
+lgb_model_path = "best_lgb_discrete.pkl"
+rf_model_path = "best_rf_discrete.pkl"
+svm_model_path = "best_svm_discrete.pkl"
 
 lgb_model = joblib.load(lgb_model_path)
 rf_model = joblib.load(rf_model_path)
