@@ -165,7 +165,7 @@ if st.sidebar.button("Run Forecast"):
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
     # Plot Actual vs Predicted (All Models)
-    st.subheader(" 📊 Actual vs Predicted Prices (All Models)")
+    st.subheader(" Actual vs Predicted Prices (All Models)")
 
     fig = go.Figure()
 
@@ -202,7 +202,7 @@ if st.sidebar.button("Run Forecast"):
     ))
 
     fig.update_layout(
-        title='Actual vs Predicted XAU/USD Price Movements',
+        title='📊 Actual vs Predicted XAU/USD Price Movements',
         xaxis_title='Date',
         yaxis_title='Price',
         legend_title='Model',
