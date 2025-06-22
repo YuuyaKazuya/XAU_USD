@@ -5,3 +5,4 @@ seaborn
 numpy
 joblib
 plotly
+lightgbm
