@@ -228,7 +228,18 @@ if st.sidebar.button("Run Forecast"):
                 family="Arial, sans-serif",  # Set font family for x-axis ticks
                 size=12,  # Set font size for x-axis ticks
                 color="black"  # Set x-axis tick text color to black
-            )
+            ),
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1, label="1d", step="day", stepmode="backward"),
+                    dict(count=7, label="1w", step="day", stepmode="backward"),
+                    dict(count=1, label="1m", step="month", stepmode="backward"),
+                    dict(step="all")
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date",
+            tickangle=45,  # Optional: Rotates the ticks for better visibility
         ),
         yaxis=dict(
             title='Price',
