@@ -217,15 +217,31 @@ if st.sidebar.button("Run Forecast"):
             size=20,  # Set font size for title
             color="black"  # Set title text color to black
         ),
-        xaxis_title_font=dict(
-            family="Arial, sans-serif",  # Set font family for x-axis title
-            size=14,  # Set font size for x-axis title
-            color="black"  # Set x-axis title text color to black
+        xaxis=dict(
+            title='Date',
+            title_font=dict(
+                family="Arial, sans-serif",  # Set font family for x-axis title
+                size=14,  # Set font size for x-axis title
+                color="black"  # Set x-axis title text color to black
+            ),
+            tickfont=dict(
+                family="Arial, sans-serif",  # Set font family for x-axis ticks
+                size=12,  # Set font size for x-axis ticks
+                color="black"  # Set x-axis tick text color to black
+            )
         ),
-        yaxis_title_font=dict(
-            family="Arial, sans-serif",  # Set font family for y-axis title
-            size=14,  # Set font size for y-axis title
-            color="black"  # Set y-axis title text color to black
+        yaxis=dict(
+            title='Price',
+            title_font=dict(
+                family="Arial, sans-serif",  # Set font family for y-axis title
+                size=14,  # Set font size for y-axis title
+                color="black"  # Set y-axis title text color to black
+            ),
+            tickfont=dict(
+                family="Arial, sans-serif",  # Set font family for y-axis ticks
+                size=12,  # Set font size for y-axis ticks
+                color="black"  # Set y-axis tick text color to black
+            )
         ),
         legend_title_font=dict(
             family="Arial, sans-serif",  # Set font family for legend title
@@ -236,22 +252,6 @@ if st.sidebar.button("Run Forecast"):
             family="Arial, sans-serif",  # Set font family for legend items
             size=12,  # Set font size for legend items
             color="black"  # Set legend text color to black
-        ),
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1, label="1d", step="day", stepmode="backward"),
-                    dict(count=7, label="1w", step="day", stepmode="backward"),
-                    dict(count=1, label="1m", step="month", stepmode="backward"),
-                    dict(step="all")
-                ])
-            ),
-            rangeslider=dict(visible=True),
-            type="date",
-            title_font=dict(color="black")  # Ensures the x-axis title is black
-        ),
-        yaxis=dict(
-            title_font=dict(color="black")  # Ensures the y-axis title is black
         )
     )
 
