@@ -39,8 +39,10 @@ uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
 if uploaded_file:
     df1 = pd.read_csv(uploaded_file)
     st.subheader("Uploaded Data")
-    st.dataframe(df1.head() + df1.tail())
-    st.dataframe(df1.tail())
+    st.subheader("First Rows of the Dataset")
+    st.dataframe(df1.head(10))
+    st.subheader("Last Rows of the Dataset")
+    st.dataframe(df1.tail(10))
 
     # Store the uploaded dataset in session_state for further processing
     st.session_state.df1 = df1
