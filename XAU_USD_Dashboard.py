@@ -165,7 +165,7 @@ if st.sidebar.button("Run Forecast"):
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
     # Plot Actual vs Predicted (All Models)
-    st.subheader("Actual vs Predicted Prices (All Models)")
+    st.subheader(" 📊 Actual vs Predicted Prices (All Models)")
 
     fig = go.Figure()
 
