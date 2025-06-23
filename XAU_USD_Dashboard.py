@@ -91,7 +91,7 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     df1 = st.session_state.df1
     df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
 
-    # Calculate technical indicators (same as before)
+    # Calculate technical indicators
     df1['SMA'] = df1['Close'].rolling(window=14).mean()
     df1['WMA'] = df1['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
     df1['Momentum'] = df1['Close'].diff(4)
@@ -136,7 +136,37 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     # Convert other technical indicators into trends (same as before)
-    # Update df1_cleaned with Trend_SMA, Trend_WMA, etc.
+    df1_cleaned.loc[:, 'Trend_SMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['SMA'], 1, 
+                                               np.where(df1_cleaned['Close'] <= df1_cleaned['SMA'], -1, 0))
+    df1_cleaned.loc[:, 'Trend_WMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['WMA'], 1, 
+                                               np.where(df1_cleaned['Close'] <= df1_cleaned['WMA'], -1, 0))
+    df1_cleaned.loc[:, 'Trend_Momentum'] = np.where(df1_cleaned['Momentum'] > 0, 1, 
+                                                    np.where(df1_cleaned['Momentum'] <= 0, -1, 0))
+    df1_cleaned.loc[:, 'Trend_StochasticK'] = np.where(df1_cleaned['StochasticK'] > df1_cleaned['StochasticK'].shift(1), 1, 
+                                                       np.where(df1_cleaned['StochasticK'] <= df1_cleaned['StochasticK'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_StochasticD'] = np.where(df1_cleaned['StochasticD'] > df1_cleaned['StochasticD'].shift(1), 1, 
+                                                       np.where(df1_cleaned['StochasticD'] <= df1_cleaned['StochasticD'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_RSI'] = np.where(df1_cleaned['RSI'] < 30, 1,
+                                                np.where(df1_cleaned['RSI'] > 70, -1,
+                                                np.where(df1_cleaned['RSI'] > df1_cleaned['RSI'].shift(1), 1,
+                                                np.where(df1_cleaned['RSI'] <= df1_cleaned['RSI'].shift(1), -1, 0))))
+    df1_cleaned.loc[:, 'Trend_MACD'] = np.where(df1_cleaned['MACD'] > df1_cleaned['MACD'].shift(1), 1, 
+                                                np.where(df1_cleaned['MACD'] <= df1_cleaned['MACD'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_WilliamsR'] = np.where(df1_cleaned['WilliamsR'] > df1_cleaned['WilliamsR'].shift(1), 1, 
+                                                     np.where(df1_cleaned['WilliamsR'] <= df1_cleaned['WilliamsR'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_A_D'] = np.where(df1_cleaned['A_D'] > df1_cleaned['A_D'].shift(1), 1, 
+                                               np.where(df1_cleaned['A_D'] <= df1_cleaned['A_D'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_CCI'] = np.where(df1_cleaned['CCI'] > df1_cleaned['CCI'].shift(1), 1, 
+                                               np.where(df1_cleaned['CCI'] <= df1_cleaned['CCI'].shift(1), -1, 0))
+
+    df_trend = df1_cleaned[['Date', 'Trend_Close', 
+                            'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
+                            'Trend_StochasticK', 'Trend_StochasticD', 'Trend_RSI', 
+                            'Trend_MACD', 'Trend_WilliamsR', 'Trend_A_D', 'Trend_CCI']]
+
+    # Display the trend data table
+    st.subheader("Data with Trends")
+    st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
 # Run predictions for all models
 if st.sidebar.button("Run Forecast"):
@@ -239,3 +269,111 @@ if st.sidebar.button("Run Forecast"):
 
     st.pyplot(fig)
 
+    # Plot Actual vs Predicted (All Models)
+    st.subheader("Actual vs Predicted Prices (All Models)")
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Trend_Close'],
+        mode='markers',
+        name='Actual Price',
+        marker=dict(color='black', size=8, symbol='circle')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['LightGBM_Predicted'],
+        mode='markers',
+        name='LightGBM Predicted',
+        marker=dict(color='blue', size=6, symbol='diamond')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Random_Forest_Predicted'],
+        mode='markers',
+        name='Random Forest Predicted',
+        marker=dict(color='red', size=6, symbol='square')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['SVM_Predicted'],
+        mode='markers',
+        name='SVM Predicted',
+        marker=dict(color='green', size=6, symbol='triangle-up')
+    ))
+
+    fig.update_layout(
+            title='📊 Actual vs Predicted XAU/USD Price Movements',
+            xaxis_title='Date',
+            yaxis_title='Price',
+            legend_title='Model',
+            hovermode='x unified',
+            template='plotly_white',  # This sets the plot background to white
+            height=1000,
+            width=1500,
+            plot_bgcolor='white',  # Ensures the background of the plot itself is white
+            paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
+            title_font=dict(
+                family="Arial, sans-serif",  # Set font family for title
+                size=40,  # Set font size for title
+                color="black"  # Set title text color to black
+            ),
+            xaxis=dict(
+                title='Date',
+                title_font=dict(
+                    family="Arial, sans-serif",  # Set font family for x-axis title
+                    size=14,  # Set font size for x-axis title
+                    color="black"  # Set x-axis title text color to black
+                ),
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for x-axis ticks
+                    size=12,  # Set font size for x-axis ticks
+                    color="black"  # Set x-axis tick text color to black
+                ),
+                rangeselector=dict(
+                    buttons=list([
+
+                        dict(count=1, label="1d", step="day", stepmode="backward"),
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),  # Added 1 year button (backward)
+                        dict(step="all")
+                    ])
+
+
+                ),
+
+                rangeslider=dict(visible=True),
+                type="date",
+                tickangle=45,  # Optional: Rotates the ticks for better visibility
+            ),
+            yaxis=dict(
+                title='Price',
+                title_font=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis title
+                    size=14,  # Set font size for y-axis title
+                    color="black"  # Set y-axis title text color to black
+                ),
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis ticks
+                    size=12,  # Set font size for y-axis ticks
+                    color="black"  # Set y-axis tick text color to black
+                )
+            ),
+            legend_title_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend title
+                size=14,  # Set font size for legend title
+                color="black"  # Set legend title text color to black
+            ),
+            legend_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend items
+                size=12,  # Set font size for legend items
+                color="black"  # Set legend text color to black
+            )
+        )
+
+    st.plotly_chart(fig)
