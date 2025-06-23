@@ -1,6 +1,6 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
+import streamlit as st
 import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
 
@@ -125,24 +125,47 @@ def generate_technical_indicators(df):
     st.subheader("Cleaned Data with Technical Indicators")
     st.dataframe(df_cleaned.head(50))
 
-# Trend Conversion
+# Convert Technical Indicators into Trends (using the approach you specified)
 def convert_to_trends(df):
-    df['Trend_Close'] = df['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
-    
-    trend_columns = [
-        'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
-        'Trend_StochasticK', 'Trend_StochasticD', 'Trend_RSI', 
-        'Trend_MACD', 'Trend_WilliamsR', 'Trend_A_D', 'Trend_CCI'
-    ]
+    df['Trend'] = np.where(df['Close'] > df['Close'].shift(1), 1, 
+                           np.where(df['Close'] < df['Close'].shift(1), -1, 0))
 
-    for col in trend_columns:
-        df[col] = df[col.split('_')[1]].diff().apply(lambda x: 1 if x > 0 else -1)
+    df['Trend_SMA'] = np.where(df['Close'] > df['SMA'], 1, 
+                               np.where(df['Close'] <= df['SMA'], -1, 0))
 
-    df_trend = df[['Date', 'Trend_Close'] + trend_columns]
+    df['Trend_WMA'] = np.where(df['Close'] > df['WMA'], 1, 
+                               np.where(df['Close'] <= df['WMA'], -1, 0))
+
+    df['Trend_Momentum'] = np.where(df['Momentum'] > 0, 1, 
+                                    np.where(df['Momentum'] <= 0, -1, 0))
+
+    df['Trend_StochasticK'] = np.where(df['StochasticK'] > df['StochasticK'].shift(1), 1, 
+                                       np.where(df['StochasticK'] <= df['StochasticK'].shift(1), -1, 0))
+
+    df['Trend_StochasticD'] = np.where(df['StochasticD'] > df['StochasticD'].shift(1), 1, 
+                                       np.where(df['StochasticD'] <= df['StochasticD'].shift(1), -1, 0))
+
+    df['Trend_RSI'] = np.where(df['RSI'] < 30, 1,
+                                np.where(df['RSI'] > 70, -1,
+                                np.where(df['RSI'] > df['RSI'].shift(1), 1,
+                                np.where(df['RSI'] <= df['RSI'].shift(1), -1, 0))))
+
+    df['Trend_MACD'] = np.where(df['MACD'] > df['MACD'].shift(1), 1, 
+                                np.where(df['MACD'] <= df['MACD'].shift(1), -1, 0))
+
+    df['Trend_WilliamsR'] = np.where(df['WilliamsR'] > df['WilliamsR'].shift(1), 1, 
+                                     np.where(df['WilliamsR'] <= df['WilliamsR'].shift(1), -1, 0))
+
+    df['Trend_A_D'] = np.where(df['A_D'] > df['A_D'].shift(1), 1, 
+                               np.where(df['A_D'] <= df['A_D'].shift(1), -1, 0))
+
+    df['Trend_CCI'] = np.where(df['CCI'] > df['CCI'].shift(1), 1, 
+                               np.where(df['CCI'] <= df['CCI'].shift(1), -1, 0))
+
     st.subheader("Data with Trends")
-    st.dataframe(df_trend.head(100))
+    st.dataframe(df.head(100))  # Display the first 100 rows
 
-    return df_trend
+    return df
 
 # Prediction
 def run_forecast(df, models):
