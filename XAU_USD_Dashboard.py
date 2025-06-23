@@ -158,6 +158,7 @@ def run_forecast(df, models):
     df["Random_Forest_Predicted"] = rf_pred
     df["SVM_Predicted"] = svm_pred
 
+    st.session_state.df_predicted = df
     return df
 
 # Visualization
