@@ -148,11 +148,11 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned.loc[:, 'Trend_StochasticK'] = np.where(df1_cleaned['StochasticK'] > df1_cleaned['StochasticK'].shift(1), 1, 
                                                        np.where(df1_cleaned['StochasticK'] <= df1_cleaned['StochasticK'].shift(1), -1, 0))
     df1_cleaned.loc[:, 'Trend_StochasticD'] = np.where(df1_cleaned['StochasticD'] > df1_cleaned['StochasticD'].shift(1), 1, 
-                                                       np.where(df1_cleaned['StochasticD'] <= df1_cleaned['StochasticD'].shift(1), -1, 0))
+                                                       np.where(df1_cleaned['StochasticD'] <= df1.clean['StochasticD'].shift(1), -1, 0))  # Fix this line
     df1_cleaned.loc[:, 'Trend_RSI'] = np.where(df1_cleaned['RSI'] < 30, 1,
                                                 np.where(df1_cleaned['RSI'] > 70, -1,
                                                 np.where(df1_cleaned['RSI'] > df1_cleaned['RSI'].shift(1), 1,
-                                                np.where(df1_cleaned['RSI'] <= df1.clean['RSI'].shift(1), -1, 0))))
+                                                np.where(df1_cleaned['RSI'] <= df1_cleaned['RSI'].shift(1), -1, 0))))
     df1_cleaned.loc[:, 'Trend_MACD'] = np.where(df1_cleaned['MACD'] > df1_cleaned['MACD'].shift(1), 1, 
                                                 np.where(df1_cleaned['MACD'] <= df1_cleaned['MACD'].shift(1), -1, 0))
     df1_cleaned.loc[:, 'Trend_WilliamsR'] = np.where(df1_cleaned['WilliamsR'] > df1_cleaned['WilliamsR'].shift(1), 1, 
