@@ -207,24 +207,6 @@ if st.sidebar.button("Run Forecast"):
     # Display the filtered dataframe with actual and predicted trends side by side with correctness
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
-    # Create downloadable links for prediction, technical indicators, and trends
-    # Create a CSV for download
-    def create_download_link(df, filename):
-        csv = df.to_csv(index=False)
-        
-        # Saving the predictions in session state so they persist after the download
-        st.session_state.downloaded_data = df
-        
-        return st.download_button(
-            label=f"Download {filename}",
-            data=csv,
-            file_name=filename,
-            mime='text/csv'
-        )
-        
-    with st.sidebar:
-        create_download_link(df_predicted, "prediction_results.csv")
-
     # Plot Actual vs Predicted (All Models)
     st.subheader(" Actual vs Predicted Prices (All Models)")
 
