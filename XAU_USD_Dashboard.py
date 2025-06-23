@@ -133,16 +133,31 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     # Convert other technical indicators into trends
-    df1_cleaned['Trend_SMA'] = df1_cleaned['SMA'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_WMA'] = df1_cleaned['WMA'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_Momentum'] = df1_cleaned['Momentum'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_StochasticK'] = df1_cleaned['StochasticK'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_StochasticD'] = df1_cleaned['StochasticD'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_RSI'] = df1_cleaned['RSI'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_MACD'] = df1_cleaned['MACD'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_WilliamsR'] = df1_cleaned['WilliamsR'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_A_D'] = df1_cleaned['A_D'].diff().apply(lambda x: 1 if x > 0 else -1)
-    df1_cleaned['Trend_CCI'] = df1_cleaned['CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned.loc[:, 'Trend'] = np.where(df1_cleaned['Close'] > df1_cleaned['Close'].shift(1), 1, 
+                                           np.where(df1_cleaned['Close'] < df1_cleaned['Close'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_SMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['SMA'], 1, 
+                                               np.where(df1_cleaned['Close'] <= df1_cleaned['SMA'], -1, 0))
+    df1_cleaned.loc[:, 'Trend_WMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['WMA'], 1, 
+                                               np.where(df1_cleaned['Close'] <= df1_cleaned['WMA'], -1, 0))
+    df1_cleaned.loc[:, 'Trend_Momentum'] = np.where(df1_cleaned['Momentum'] > 0, 1, 
+                                                    np.where(df1_cleaned['Momentum'] <= 0, -1, 0))
+    df1_cleaned.loc[:, 'Trend_StochasticK'] = np.where(df1_cleaned['StochasticK'] > df1_cleaned['StochasticK'].shift(1), 1, 
+                                                       np.where(df1_cleaned['StochasticK'] <= df1_cleaned['StochasticK'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_StochasticD'] = np.where(df1_cleaned['StochasticD'] > df1_cleaned['StochasticD'].shift(1), 1, 
+                                                       np.where(df1_cleaned['StochasticD'] <= df1_cleaned['StochasticD'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_RSI'] = np.where(df1_cleaned['RSI'] < 30, 1,
+                                                np.where(df1_cleaned['RSI'] > 70, -1,
+                                                np.where(df1_cleaned['RSI'] > df1_cleaned['RSI'].shift(1), 1,
+                                                np.where(df1_cleaned['RSI'] <= df1_cleaned['RSI'].shift(1), -1, 0))))
+    df1_cleaned.loc[:, 'Trend_MACD'] = np.where(df1_cleaned['MACD'] > df1_cleaned['MACD'].shift(1), 1, 
+                                                np.where(df1_cleaned['MACD'] <= df1_cleaned['MACD'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_WilliamsR'] = np.where(df1_cleaned['WilliamsR'] > df1_cleaned['WilliamsR'].shift(1), 1, 
+                                                     np.where(df1_cleaned['WilliamsR'] <= df1_cleaned['WilliamsR'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_A_D'] = np.where(df1_cleaned['A_D'] > df1_cleaned['A_D'].shift(1), 1, 
+                                               np.where(df1_cleaned['A_D'] <= df1_cleaned['A_D'].shift(1), -1, 0))
+    df1_cleaned.loc[:, 'Trend_CCI'] = np.where(df1_cleaned['CCI'] > df1_cleaned['CCI'].shift(1), 1, 
+                                               np.where(df1_cleaned['CCI'] <= df1_cleaned['CCI'].shift(1), -1, 0))
+
 
     df_trend = df1_cleaned[['Date', 'Trend_Close', 
                             'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
