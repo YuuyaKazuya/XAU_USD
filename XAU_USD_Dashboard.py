@@ -90,8 +90,6 @@ def generate_technical_indicators(df):
     # Calculate technical indicators
     df['SMA'] = df['Close'].rolling(window=14).mean()
     df['WMA'] = df['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
-    
-    # Momentum: the difference between the current closing price and the closing price from 4 days ago
     df['Momentum'] = df['Close'].diff(4)
 
     high_14 = df['High'].rolling(window=14).max()
@@ -188,6 +186,11 @@ def run_forecast(df, models):
 
 # Visualization
 def plot_predictions(df):
+    # Check if the necessary columns exist in the DataFrame
+    if 'Trend_Close' not in df or 'LightGBM_Predicted' not in df or 'Random_Forest_Predicted' not in df or 'SVM_Predicted' not in df:
+        st.error("Missing required columns for prediction visualization.")
+        return
+
     df_predicted = df[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']]
 
     fig = go.Figure()
