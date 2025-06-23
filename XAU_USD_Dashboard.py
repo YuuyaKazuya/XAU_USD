@@ -90,6 +90,8 @@ def generate_technical_indicators(df):
     # Calculate technical indicators
     df['SMA'] = df['Close'].rolling(window=14).mean()
     df['WMA'] = df['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
+    
+    # Momentum: the difference between the current closing price and the closing price from 4 days ago
     df['Momentum'] = df['Close'].diff(4)
 
     high_14 = df['High'].rolling(window=14).max()
