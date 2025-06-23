@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 # Set the page layout to wide
 st.set_page_config(layout="wide")
 
-# Title and Description
+# Title and Description with clickable link
 st.title("📊 One-Day-Ahead XAU/USD Price Movement Prediction")
 st.markdown("""
 This dashboard forecasts the XAU/USD exchange rate trends using three different models:  
@@ -18,6 +18,8 @@ This dashboard forecasts the XAU/USD exchange rate trends using three different 
 - **SVM**
 
 The models predict future price movements based on historical data and technical indicators.
+
+For historical forex data, visit [ForexSB](https://forexsb.com/historical-forex-data).
 """)
 
 # Load the pre-trained models
@@ -126,7 +128,7 @@ if st.sidebar.button("Run Forecast"):
     # Define the features for prediction
     features_discrete = df1_cleaned[['Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 'Trend_StochasticK', 
                                     'Trend_StochasticD', 'Trend_RSI', 'Trend_MACD', 'Trend_WilliamsR', 
-                                    'Trend_A_D', 'Trend_CCI']]
+                                    'Trend_A_D', 'Trend_CCI']]  # feature columns
 
     # Make predictions for each model
     lgb_pred = lgb_model.predict(features_discrete)
@@ -240,13 +242,17 @@ if st.sidebar.button("Run Forecast"):
                 ),
                 rangeselector=dict(
                     buttons=list([
+
                         dict(count=1, label="1d", step="day", stepmode="backward"),
                         dict(count=7, label="1w", step="day", stepmode="backward"),
                         dict(count=1, label="1m", step="month", stepmode="backward"),
                         dict(count=1, label="1y", step="year", stepmode="backward"),  # Added 1 year button (backward)
                         dict(step="all")
                     ])
+
+
                 ),
+
                 rangeslider=dict(visible=True),
                 type="date",
                 tickangle=45,  # Optional: Rotates the ticks for better visibility
