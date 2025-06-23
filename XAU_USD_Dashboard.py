@@ -141,15 +141,15 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
             file_name=filename,
             mime='text/csv'
         )
-    
-    # Create the download link for technical indicators CSV
-    create_download_link(df1_cleaned, "technical_indicators.csv")
+
+    # Create the download link for technical indicators CSV in the sidebar
+    with st.sidebar:
+        create_download_link(df1_cleaned, "technical_indicators.csv")
     
     # Add this to re-display the prediction data after the download is triggered
     if 'downloaded_data' in st.session_state:
         st.subheader("Technical Indicator (After Download)")
         st.dataframe(st.session_state.downloaded_data)  # Display the downloaded data again
-        
 
 # Convert Close Price into Trend (Up/Down)
 if 'df1_cleaned' in st.session_state:
@@ -190,7 +190,8 @@ if 'df1_cleaned' in st.session_state:
             file_name=filename,
             mime='text/csv'
         )
-    create_download_link(df_trend, "trend_data.csv")
+    with st.sidebar:
+        create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
 if st.sidebar.button("Run Forecast"):
@@ -261,7 +262,8 @@ if st.sidebar.button("Run Forecast"):
             mime='text/csv'
         )
         
-    create_download_link(df_predicted, "prediction_results.csv")
+    with st.sidebar:
+        create_download_link(df_predicted, "prediction_results.csv")
 
     # Plot Actual vs Predicted (All Models)
     st.subheader(" Actual vs Predicted Prices (All Models)")
