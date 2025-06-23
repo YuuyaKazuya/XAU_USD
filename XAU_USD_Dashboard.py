@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import joblib
 import plotly.graph_objects as go
-import io
 
 # Set the page layout to wide
 st.set_page_config(layout="wide")
@@ -130,7 +129,7 @@ if st.session_state.section == "technical_indicators" and 'df1_cleaned' in st.se
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
-# Run predictions for all models
+# Run predictions for all models in "Prediction Results" section
 if st.session_state.section == "prediction_results" and st.sidebar.button("Run Forecast"):
     st.success("Running Forecast for all models...")
 
