@@ -132,15 +132,17 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
         csv = df.to_csv(index=False)
         
         # Saving the predictions in session state so they persist after the download
-        st.session_state.downloaded_data = df
-        
+        if 'downloaded_data' not in st.session_state:
+            st.session_state.downloaded_data = df
+            
         return st.download_button(
             label=f"Download {filename}",
             data=csv,
             file_name=filename,
             mime='text/csv'
         )
-
+    
+    # Create the download link for technical indicators CSV
     create_download_link(df1_cleaned, "technical_indicators.csv")
     
     # Add this to re-display the prediction data after the download is triggered
