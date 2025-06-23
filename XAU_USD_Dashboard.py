@@ -130,6 +130,16 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     st.subheader("Cleaned Data with Technical Indicators")
     st.dataframe(df1_cleaned.head(50))
 
+    # Create a CSV for download
+    def create_download_link(df, filename):
+        csv = df.to_csv(index=False)
+        return st.download_button(
+            label=f"Download {filename}",
+            data=csv,
+            file_name=filename,
+            mime='text/csv'
+        )
+        
     create_download_link(df1_cleaned, "technical_indicators.csv")
 
 # Convert Close Price into Trend (Up/Down)
@@ -158,6 +168,16 @@ if 'df1_cleaned' in st.session_state:
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
+    # Create a CSV for download
+    def create_download_link(df, filename):
+        csv = df.to_csv(index=False)
+        return st.download_button(
+            label=f"Download {filename}",
+            data=csv,
+            file_name=filename,
+            mime='text/csv'
+        )
+        
     create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
