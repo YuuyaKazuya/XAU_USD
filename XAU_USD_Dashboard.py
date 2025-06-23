@@ -130,6 +130,8 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     st.subheader("Cleaned Data with Technical Indicators")
     st.dataframe(df1_cleaned.head(50))
 
+    create_download_link(df1_cleaned, "technical_indicators.csv")
+
 # Convert Close Price into Trend (Up/Down)
 if 'df1_cleaned' in st.session_state:
     df1_cleaned = st.session_state.df1_cleaned
@@ -155,6 +157,8 @@ if 'df1_cleaned' in st.session_state:
     # Display the trend data table
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
+
+    create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
 if st.sidebar.button("Run Forecast"):
@@ -223,8 +227,6 @@ if st.sidebar.button("Run Forecast"):
     
     # Provide the download links
     create_download_link(df_predicted, "prediction_results.csv")
-    create_download_link(df1_cleaned, "technical_indicators.csv")
-    create_download_link(df_trend, "trend_data.csv")
 
     # Plot Actual vs Predicted (All Models)
     st.subheader(" Actual vs Predicted Prices (All Models)")
