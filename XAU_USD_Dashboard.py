@@ -223,7 +223,7 @@ if st.sidebar.button("Run Forecast"):
     
     # Provide the download links
     create_download_link(df_predicted, "prediction_results.csv")
-    create_download_link(df1_cleaned, "technical_indicators.csv")
+    create_download_link(features_discrete, "technical_indicators.csv")
     create_download_link(df_trend, "trend_data.csv")
 
     # Plot Actual vs Predicted (All Models)
