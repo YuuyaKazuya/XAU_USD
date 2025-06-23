@@ -207,12 +207,6 @@ if st.sidebar.button("Run Forecast"):
                             'Random Forest (Predicted)', 'Random Forest (Correct)', 
                             'SVM (Predicted)', 'SVM (Correct)']
 
-    # Now select the relevant columns for display (predicted value and correctness tick side by side)
-    df_predicted_result = df_predicted[['Date', 'Trend_Close', 
-                                 'LightGBM_Predicted_Value', 
-                                 'Random_Forest_Predicted_Value', 
-                                 'SVM_Predicted_Value']]
-
     # Display the filtered dataframe with actual and predicted trends side by side with correctness
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
@@ -228,7 +222,7 @@ if st.sidebar.button("Run Forecast"):
         )
     
     # Provide the download links
-    create_download_link(df_predicted_result, "prediction_results.csv")
+    create_download_link(df_predicted, "prediction_results.csv")
     create_download_link(df1_cleaned, "technical_indicators.csv")
     create_download_link(df_trend, "trend_data.csv")
 
