@@ -127,30 +127,6 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     st.subheader("Cleaned Data with Technical Indicators")
     st.dataframe(df1_cleaned.head(50))
 
-    # Create a CSV for download
-    def create_download_link(df, filename):
-        csv = df.to_csv(index=False)
-        
-        # Saving the predictions in session state so they persist after the download
-        if 'downloaded_data' not in st.session_state:
-            st.session_state.downloaded_data = df
-            
-        return st.download_button(
-            label=f"Download {filename}",
-            data=csv,
-            file_name=filename,
-            mime='text/csv'
-        )
-
-    # Create the download link for technical indicators CSV in the sidebar
-    with st.sidebar:
-        create_download_link(df1_cleaned, "technical_indicators.csv")
-    
-    # Add this to re-display the prediction data after the download is triggered
-    if 'downloaded_data' in st.session_state:
-        st.subheader("Technical Indicator (After Download)")
-        st.dataframe(st.session_state.downloaded_data)  # Display the downloaded data again
-
 # Convert Close Price into Trend (Up/Down)
 if 'df1_cleaned' in st.session_state:
     df1_cleaned = st.session_state.df1_cleaned
@@ -176,22 +152,6 @@ if 'df1_cleaned' in st.session_state:
     # Display the trend data table
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
-
-    # Create a CSV for download
-    def create_download_link(df, filename):
-        csv = df.to_csv(index=False)
-        
-        # Saving the predictions in session state so they persist after the download
-        st.session_state.downloaded_data = df
-        
-        return st.download_button(
-            label=f"Download {filename}",
-            data=csv,
-            file_name=filename,
-            mime='text/csv'
-        )
-    with st.sidebar:
-        create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
 if st.sidebar.button("Run Forecast"):
