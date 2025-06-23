@@ -1,8 +1,11 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
-import joblib
+import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
+import io
 
 # Set the page layout to wide
 st.set_page_config(layout="wide")
@@ -20,15 +23,39 @@ The models predict future price movements based on historical data and technical
 For historical forex data, visit [ForexSB](https://forexsb.com/historical-forex-data).
 """)
 
-# Track the section state
-if 'section' not in st.session_state:
-    st.session_state.section = "technical_indicators"  # Default section
+# User Guide Section with collapsible expander
+with st.expander("📖 User Guide"):
+    st.markdown("""
+    ### How to Use the Dashboard:
 
-# Sidebar navigation
-section = st.sidebar.radio("Navigation", options=["Technical Indicators", "Prediction Results"])
+    1. **Upload Your Dataset**:
+       - Click on the **"Upload CSV File"** button on the sidebar to upload your historical XAU/USD dataset.
+       - The file should contain the following columns: Date, Open, High, Low, Close, Volume.
 
-# Update the session state when the user selects a new section
-st.session_state.section = section
+    2. **Generate Technical Indicators**:
+       - Once the dataset is uploaded, click the **"Generate Technical Indicators"** button to calculate key technical indicators like SMA, WMA, RSI, MACD, and more. This step will add these indicators to your dataset.
+
+    3. **View Cleaned Data**:
+       - After generating the technical indicators, you will see the cleaned data along with the newly added columns of technical indicators.
+
+    4. **Run Forecast**:
+       - To predict the price movement, click the **"Run Forecast"** button on the sidebar.
+       - The models will predict the trend of the XAU/USD price using the generated technical indicators.
+       - You can view the prediction results for **LightGBM**, **Random Forest**, and **SVM** models, along with their accuracy.
+
+    5. **Visualize Predictions**:
+       - View the comparison between **actual** and **predicted** trends for each model in the interactive chart below.
+
+    ### How to Interpret Results:
+    - **Trend (Up/Down)**: 
+       - If the **"Trend"** value is **1**, it means the price movement is predicted to go **up**.
+       - If the **"Trend"** value is **-1**, it means the price movement is predicted to go **down**.
+       
+    - **Accuracy**:
+       - The **"Correct"** column next to each model indicates whether the model correctly predicted the trend for that day: **✔️** for correct and **❌** for incorrect.
+
+    For any issues, check the error messages shown above the chart or dataset.
+    """)
 
 # Load the pre-trained models
 lgb_model_path = "best_lgb_discrete.pkl"
@@ -45,7 +72,7 @@ st.success("✅ All Pre-trained Models Loaded")
 st.sidebar.header("Upload Your Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
 
-# Display uploaded data if the file is uploaded
+# Display uploaded data
 if uploaded_file:
     df1 = pd.read_csv(uploaded_file)
     st.subheader("Uploaded Data")
@@ -58,7 +85,7 @@ if uploaded_file:
     st.session_state.df1 = df1
 
 # Generate Technical Indicators
-if st.session_state.section == "technical_indicators" and 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
+if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
     st.warning("Generating Technical Indicators... Please wait.")
     
     df1 = st.session_state.df1
@@ -104,7 +131,7 @@ if st.session_state.section == "technical_indicators" and 'df1' in st.session_st
     st.dataframe(df1_cleaned.head(50))
 
 # Convert Close Price into Trend (Up/Down)
-if st.session_state.section == "technical_indicators" and 'df1_cleaned' in st.session_state:
+if 'df1_cleaned' in st.session_state:
     df1_cleaned = st.session_state.df1_cleaned
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
@@ -129,8 +156,8 @@ if st.session_state.section == "technical_indicators" and 'df1_cleaned' in st.se
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
-# Run predictions for all models in "Prediction Results" section
-if st.session_state.section == "prediction_results" and st.sidebar.button("Run Forecast"):
+# Run predictions for all models
+if st.sidebar.button("Run Forecast"):
     st.success("Running Forecast for all models...")
 
     # Define the features for prediction
