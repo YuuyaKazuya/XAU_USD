@@ -158,7 +158,6 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned.loc[:, 'Trend_CCI'] = np.where(df1_cleaned['CCI'] > df1_cleaned['CCI'].shift(1), 1, 
                                                np.where(df1_cleaned['CCI'] <= df1_cleaned['CCI'].shift(1), -1, 0))
 
-
     df_trend = df1_cleaned[['Date', 'Trend_Close', 
                             'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
                             'Trend_StochasticK', 'Trend_StochasticD', 'Trend_RSI', 
