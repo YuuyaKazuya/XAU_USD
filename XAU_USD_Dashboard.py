@@ -170,6 +170,18 @@ if 'df1_cleaned' in st.session_state:
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
     # Create a CSV for download
+    def create_download_link(df, filename):
+        csv = df.to_csv(index=False)
+        
+        # Saving the predictions in session state so they persist after the download
+        st.session_state.downloaded_data = df
+        
+        return st.download_button(
+            label=f"Download {filename}",
+            data=csv,
+            file_name=filename,
+            mime='text/csv'
+        )
     create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
@@ -227,6 +239,20 @@ if st.sidebar.button("Run Forecast"):
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
     # Create downloadable links for prediction, technical indicators, and trends
+    # Create a CSV for download
+    def create_download_link(df, filename):
+        csv = df.to_csv(index=False)
+        
+        # Saving the predictions in session state so they persist after the download
+        st.session_state.downloaded_data = df
+        
+        return st.download_button(
+            label=f"Download {filename}",
+            data=csv,
+            file_name=filename,
+            mime='text/csv'
+        )
+        
     create_download_link(df_predicted, "prediction_results.csv")
 
     # Plot Actual vs Predicted (All Models)
