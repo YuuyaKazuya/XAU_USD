@@ -265,8 +265,8 @@ if st.sidebar.button("Run Forecast"):
             legend_title='Model',
             hovermode='x unified',
             template='plotly_white',  # This sets the plot background to white
-            height=1000,
-            width=1500,
+            height=800,
+            width=1000,
             plot_bgcolor='white',  # Ensures the background of the plot itself is white
             paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
             title_font=dict(
