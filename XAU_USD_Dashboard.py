@@ -140,13 +140,14 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
             file_name=filename,
             mime='text/csv'
         )
+
+    create_download_link(df1_cleaned, "technical_indicators.csv")
     
     # Add this to re-display the prediction data after the download is triggered
     if 'downloaded_data' in st.session_state:
         st.subheader("Technical Indicator (After Download)")
         st.dataframe(st.session_state.downloaded_data)  # Display the downloaded data again
         
-    create_download_link(df1_cleaned, "technical_indicators.csv")
 
 # Convert Close Price into Trend (Up/Down)
 if 'df1_cleaned' in st.session_state:
