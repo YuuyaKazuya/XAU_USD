@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Set the page layout to wide
 st.set_page_config(layout="wide")
@@ -57,9 +54,6 @@ with st.expander("📖 User Guide"):
     For any issues, check the error messages shown above the chart or dataset.
     """)
 
-# Sidebar for page navigation
-page = st.sidebar.radio("Select a page", ["Prediction", "Performance Metrics"])
-
 # Load the pre-trained models
 lgb_model_path = "best_lgb_discrete.pkl"
 rf_model_path = "best_rf_discrete.pkl"
@@ -71,7 +65,7 @@ svm_model = joblib.load(svm_model_path)
 
 st.success("✅ All Pre-trained Models Loaded")
 
-# Sidebar for file upload
+# Sidebar
 st.sidebar.header("Upload Your Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
 
@@ -139,6 +133,8 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
     # Convert other technical indicators into trends
+    df1_cleaned.loc[:, 'Trend'] = np.where(df1_cleaned['Close'] > df1_cleaned['Close'].shift(1), 1, 
+                                           np.where(df1_cleaned['Close'] < df1_cleaned['Close'].shift(1), -1, 0))
     df1_cleaned.loc[:, 'Trend_SMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['SMA'], 1, 
                                                np.where(df1_cleaned['Close'] <= df1_cleaned['SMA'], -1, 0))
     df1_cleaned.loc[:, 'Trend_WMA'] = np.where(df1_cleaned['Close'] > df1_cleaned['WMA'], 1, 
@@ -148,7 +144,7 @@ if 'df1_cleaned' in st.session_state:
     df1_cleaned.loc[:, 'Trend_StochasticK'] = np.where(df1_cleaned['StochasticK'] > df1_cleaned['StochasticK'].shift(1), 1, 
                                                        np.where(df1_cleaned['StochasticK'] <= df1_cleaned['StochasticK'].shift(1), -1, 0))
     df1_cleaned.loc[:, 'Trend_StochasticD'] = np.where(df1_cleaned['StochasticD'] > df1_cleaned['StochasticD'].shift(1), 1, 
-                                                       np.where(df1_cleaned['StochasticD'] <= df1_cleaned['StochasticD'].shift(1), -1, 0))  # Fixed this line
+                                                       np.where(df1_cleaned['StochasticD'] <= df1_cleaned['StochasticD'].shift(1), -1, 0))
     df1_cleaned.loc[:, 'Trend_RSI'] = np.where(df1_cleaned['RSI'] < 30, 1,
                                                 np.where(df1_cleaned['RSI'] > 70, -1,
                                                 np.where(df1_cleaned['RSI'] > df1_cleaned['RSI'].shift(1), 1,
@@ -171,173 +167,165 @@ if 'df1_cleaned' in st.session_state:
     st.subheader("Data with Trends")
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
-# Select page to display
-if page == "Prediction":
-    # Run predictions for all models
-    if st.sidebar.button("Run Forecast"):
-        st.success("Running Forecast for all models...")
+# Run predictions for all models
+if st.sidebar.button("Run Forecast"):
+    st.success("Running Forecast for all models...")
 
-        # Define the features for prediction
-        features_discrete = df1_cleaned[['Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 'Trend_StochasticK', 
-                                        'Trend_StochasticD', 'Trend_RSI', 'Trend_MACD', 'Trend_WilliamsR', 
-                                        'Trend_A_D', 'Trend_CCI']]  # feature columns
+    # Define the features for prediction
+    features_discrete = df1_cleaned[['Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 'Trend_StochasticK', 
+                                    'Trend_StochasticD', 'Trend_RSI', 'Trend_MACD', 'Trend_WilliamsR', 
+                                    'Trend_A_D', 'Trend_CCI']]  # feature columns
 
-        # Make predictions for each model
-        lgb_pred = lgb_model.predict(features_discrete)
-        rf_pred = rf_model.predict(features_discrete)
-        svm_pred = svm_model.predict(features_discrete)
+    # Make predictions for each model
+    lgb_pred = lgb_model.predict(features_discrete)
+    rf_pred = rf_model.predict(features_discrete)
+    svm_pred = svm_model.predict(features_discrete)
 
-        # Store the predictions in the dataframe
-        df1_cleaned["LightGBM_Predicted"] = lgb_pred
-        df1_cleaned["Random_Forest_Predicted"] = rf_pred
-        df1_cleaned["SVM_Predicted"] = svm_pred
+    # Store the predictions in the dataframe
+    df1_cleaned["LightGBM_Predicted"] = lgb_pred
+    df1_cleaned["Random_Forest_Predicted"] = rf_pred
+    df1_cleaned["SVM_Predicted"] = svm_pred
 
-        st.subheader("Prediction Results (Actual vs Predicted Trend)")
+    st.subheader("Prediction Results (Actual vs Predicted Trend)")
 
-        # Create a new dataframe showing only the actual trend and predicted trends
-        df_predicted = df1_cleaned[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']] 
+    # Create a new dataframe showing only the actual trend and predicted trends
+    df_predicted = df1_cleaned[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']] 
 
-        # Add correctness check directly to predicted columns with a gap between predicted value and tick
-        df_predicted['LightGBM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['LightGBM_Predicted'] == 1) | 
-                                                    (df_predicted['Trend_Close'] == -1) & (df_predicted['LightGBM_Predicted'] == -1), '✔️', '❌')
-        
-        df_predicted['Random_Forest_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['Random_Forest_Predicted'] == 1) | 
-                                                          (df_predicted['Trend_Close'] == -1) & (df_predicted['Random_Forest_Predicted'] == -1), '✔️', '❌')
-        
-        df_predicted['SVM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['SVM_Predicted'] == 1) | 
-                                                (df_predicted['Trend_Close'] == -1) & (df_predicted['SVM_Predicted'] == -1), '✔️', '❌')
+    # Add correctness check directly to predicted columns with a gap between predicted value and tick
+    df_predicted['LightGBM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['LightGBM_Predicted'] == 1) | 
+                                                (df_predicted['Trend_Close'] == -1) & (df_predicted['LightGBM_Predicted'] == -1), '✔️', '❌')
+    
+    df_predicted['Random_Forest_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['Random_Forest_Predicted'] == 1) | 
+                                                      (df_predicted['Trend_Close'] == -1) & (df_predicted['Random_Forest_Predicted'] == -1), '✔️', '❌')
+    
+    df_predicted['SVM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['SVM_Predicted'] == 1) | 
+                                            (df_predicted['Trend_Close'] == -1) & (df_predicted['SVM_Predicted'] == -1), '✔️', '❌')
 
-        st.dataframe(df_predicted.head(100))  # Display top 100 rows with predictions
+    # Create separate columns for predicted values and ticks
+    df_predicted['LightGBM_Predicted_Value'] = df_predicted['LightGBM_Predicted']
+    df_predicted['Random_Forest_Predicted_Value'] = df_predicted['Random_Forest_Predicted']
+    df_predicted['SVM_Predicted_Value'] = df_predicted['SVM_Predicted']
 
-        # Plot Actual vs Predicted (All Models)
-        st.subheader("Actual vs Predicted Prices (All Models)")
+    # Now select the relevant columns for display (predicted value and correctness tick side by side)
+    df_predicted = df_predicted[['Date', 'Trend_Close', 
+                                 'LightGBM_Predicted_Value', 'LightGBM_Correct', 
+                                 'Random_Forest_Predicted_Value', 'Random_Forest_Correct', 
+                                 'SVM_Predicted_Value', 'SVM_Correct']]
 
-        fig = go.Figure()
+    # Update the column headers to combine the "Predicted" and "Correct" into one header
+    df_predicted.columns = ['Date', 'Actual Trend', 
+                            'LightGBM (Predicted)', 'LightGBM (Correct)', 
+                            'Random Forest (Predicted)', 'Random Forest (Correct)', 
+                            'SVM (Predicted)', 'SVM (Correct)']
 
-        fig.add_trace(go.Scatter(
-            x=df1_cleaned['Date'],
-            y=df1_cleaned['Trend_Close'],
-            mode='markers',
-            name='Actual Price',
-            marker=dict(color='black', size=8, symbol='circle')
-        ))
+    # Display the filtered dataframe with actual and predicted trends side by side with correctness
+    st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
-        fig.add_trace(go.Scatter(
-            x=df1_cleaned['Date'],
-            y=df1_cleaned['LightGBM_Predicted'],
-            mode='markers',
-            name='LightGBM Predicted',
-            marker=dict(color='blue', size=6, symbol='diamond')
-        ))
+    # Plot Actual vs Predicted (All Models)
+    st.subheader(" Actual vs Predicted Prices (All Models)")
 
-        fig.add_trace(go.Scatter(
-            x=df1_cleaned['Date'],
-            y=df1_cleaned['Random_Forest_Predicted'],
-            mode='markers',
-            name='Random Forest Predicted',
-            marker=dict(color='red', size=6, symbol='square')
-        ))
+    fig = go.Figure()
 
-        fig.add_trace(go.Scatter(
-            x=df1_cleaned['Date'],
-            y=df1_cleaned['SVM_Predicted'],
-            mode='markers',
-            name='SVM Predicted',
-            marker=dict(color='green', size=6, symbol='triangle-up')
-        ))
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Trend_Close'],
+        mode='markers',
+        name='Actual Price',
+        marker=dict(color='black', size=8, symbol='circle')
+    ))
 
-        fig.update_layout(
-                title='📊 Actual vs Predicted XAU/USD Price Movements',
-                xaxis_title='Date',
-                yaxis_title='Price',
-                legend_title='Model',
-                hovermode='x unified',
-                template='plotly_white',  # This sets the plot background to white
-                height=1000,
-                width=1500,
-                plot_bgcolor='white',  # Ensures the background of the plot itself is white
-                paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['LightGBM_Predicted'],
+        mode='markers',
+        name='LightGBM Predicted',
+        marker=dict(color='blue', size=6, symbol='diamond')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Random_Forest_Predicted'],
+        mode='markers',
+        name='Random Forest Predicted',
+        marker=dict(color='red', size=6, symbol='square')
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['SVM_Predicted'],
+        mode='markers',
+        name='SVM Predicted',
+        marker=dict(color='green', size=6, symbol='triangle-up')
+    ))
+
+    fig.update_layout(
+            title='📊 Actual vs Predicted XAU/USD Price Movements',
+            xaxis_title='Date',
+            yaxis_title='Price',
+            legend_title='Model',
+            hovermode='x unified',
+            template='plotly_white',  # This sets the plot background to white
+            height=1000,
+            width=1500,
+            plot_bgcolor='white',  # Ensures the background of the plot itself is white
+            paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
+            title_font=dict(
+                family="Arial, sans-serif",  # Set font family for title
+                size=40,  # Set font size for title
+                color="black"  # Set title text color to black
+            ),
+            xaxis=dict(
+                title='Date',
                 title_font=dict(
-                    family="Arial, sans-serif",  # Set font family for title
-                    size=40,  # Set font size for title
-                    color="black"  # Set title text color to black
+                    family="Arial, sans-serif",  # Set font family for x-axis title
+                    size=14,  # Set font size for x-axis title
+                    color="black"  # Set x-axis title text color to black
                 ),
-                xaxis=dict(
-                    title='Date',
-                    title_font=dict(
-                        family="Arial, sans-serif",  # Set font family for x-axis title
-                        size=14,  # Set font size for x-axis title
-                        color="black"  # Set x-axis title text color to black
-                    ),
-                    tickfont=dict(
-                        family="Arial, sans-serif",  # Set font family for x-axis ticks
-                        size=12,  # Set font size for x-axis ticks
-                        color="black"  # Set x-axis tick text color to black
-                    ),
-                    rangeselector=dict(
-                        buttons=list([
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for x-axis ticks
+                    size=12,  # Set font size for x-axis ticks
+                    color="black"  # Set x-axis tick text color to black
+                ),
+                rangeselector=dict(
+                    buttons=list([
 
-                            dict(count=1, label="1d", step="day", stepmode="backward"),
-                            dict(count=7, label="1w", step="day", stepmode="backward"),
-                            dict(count=1, label="1m", step="month", stepmode="backward"),
-                            dict(count=1, label="1y", step="year", stepmode="backward"),  # Added 1 year button (backward)
-                            dict(step="all")
-                        ])
+                        dict(count=1, label="1d", step="day", stepmode="backward"),
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),  # Added 1 year button (backward)
+                        dict(step="all")
+                    ])
 
 
-                    ),
+                ),
 
-                    rangeslider=dict(visible=True),
-                    type="date",
-                    tickangle=45,  # Optional: Rotates the ticks for better visibility
+                rangeslider=dict(visible=True),
+                type="date",
+                tickangle=45,  # Optional: Rotates the ticks for better visibility
+            ),
+            yaxis=dict(
+                title='Price',
+                title_font=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis title
+                    size=14,  # Set font size for y-axis title
+                    color="black"  # Set y-axis title text color to black
                 ),
-                yaxis=dict(
-                    title='Price',
-                    title_font=dict(
-                        family="Arial, sans-serif",  # Set font family for y-axis title
-                        size=14,  # Set font size for y-axis title
-                        color="black"  # Set y-axis title text color to black
-                    ),
-                    tickfont=dict(
-                        family="Arial, sans-serif",  # Set font family for y-axis ticks
-                        size=12,  # Set font size for y-axis ticks
-                        color="black"  # Set y-axis tick text color to black
-                    )
-                ),
-                legend_title_font=dict(
-                    family="Arial, sans-serif",  # Set font family for legend title
-                    size=14,  # Set font size for legend title
-                    color="black"  # Set legend title text color to black
-                ),
-                legend_font=dict(
-                    family="Arial, sans-serif",  # Set font family for legend items
-                    size=12,  # Set font size for legend items
-                    color="black"  # Set legend text color to black
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis ticks
+                    size=12,  # Set font size for y-axis ticks
+                    color="black"  # Set y-axis tick text color to black
                 )
+            ),
+            legend_title_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend title
+                size=14,  # Set font size for legend title
+                color="black"  # Set legend title text color to black
+            ),
+            legend_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend items
+                size=12,  # Set font size for legend items
+                color="black"  # Set legend text color to black
             )
+        )
 
-        st.plotly_chart(fig)
-
-
-elif page == "Performance Metrics":
-    st.subheader("Performance Metrics for All Models")
-
-    # Add the metrics you want to show (example for LightGBM)
-    # Repeat this for Random Forest and SVM
-    st.markdown(f"**LightGBM Metrics:**")
-    st.markdown(f"Accuracy: {accuracy_score(df_predicted['Trend_Close'], df_predicted['LightGBM_Predicted']):.4f}")
-    st.markdown(f"Precision: {precision_score(df_predicted['Trend_Close'], df_predicted['LightGBM_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"Recall: {recall_score(df_predicted['Trend_Close'], df_predicted['LightGBM_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"F1 Score: {f1_score(df_predicted['Trend_Close'], df_predicted['LightGBM_Predicted'], average='binary', pos_label=1):.4f}")
-    
-    st.markdown(f"**Random Forest Metrics:**")
-    st.markdown(f"Accuracy: {accuracy_score(df_predicted['Trend_Close'], df_predicted['Random_Forest_Predicted']):.4f}")
-    st.markdown(f"Precision: {precision_score(df_predicted['Trend_Close'], df_predicted['Random_Forest_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"Recall: {recall_score(df_predicted['Trend_Close'], df_predicted['Random_Forest_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"F1 Score: {f1_score(df_predicted['Trend_Close'], df_predicted['Random_Forest_Predicted'], average='binary', pos_label=1):.4f}")
-    
-    st.markdown(f"**SVM Metrics:**")
-    st.markdown(f"Accuracy: {accuracy_score(df_predicted['Trend_Close'], df_predicted['SVM_Predicted']):.4f}")
-    st.markdown(f"Precision: {precision_score(df_predicted['Trend_Close'], df_predicted['SVM_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"Recall: {recall_score(df_predicted['Trend_Close'], df_predicted['SVM_Predicted'], average='binary', pos_label=1):.4f}")
-    st.markdown(f"F1 Score: {f1_score(df_predicted['Trend_Close'], df_predicted['SVM_Predicted'], average='binary', pos_label=1):.4f}")
+    st.plotly_chart(fig)
