@@ -57,6 +57,16 @@ with st.expander("📖 User Guide"):
     For any issues, check the error messages shown above the chart or dataset.
     """)
 
+# Track the section state
+if 'section' not in st.session_state:
+    st.session_state.section = "technical_indicators"  # Default section
+
+# Sidebar navigation
+section = st.sidebar.radio("Navigation", options=["Technical Indicators", "Prediction Results"])
+
+# Update the session state when the user selects a new section
+st.session_state.section = section
+
 # Load the pre-trained models
 lgb_model_path = "best_lgb_discrete.pkl"
 rf_model_path = "best_rf_discrete.pkl"
@@ -72,7 +82,7 @@ st.success("✅ All Pre-trained Models Loaded")
 st.sidebar.header("Upload Your Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
 
-# Display uploaded data
+# Display uploaded data if the file is uploaded
 if uploaded_file:
     df1 = pd.read_csv(uploaded_file)
     st.subheader("Uploaded Data")
@@ -85,7 +95,7 @@ if uploaded_file:
     st.session_state.df1 = df1
 
 # Generate Technical Indicators
-if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
+if st.session_state.section == "technical_indicators" and 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
     st.warning("Generating Technical Indicators... Please wait.")
     
     df1 = st.session_state.df1
@@ -131,7 +141,7 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     st.dataframe(df1_cleaned.head(50))
 
 # Convert Close Price into Trend (Up/Down)
-if 'df1_cleaned' in st.session_state:
+if st.session_state.section == "technical_indicators" and 'df1_cleaned' in st.session_state:
     df1_cleaned = st.session_state.df1_cleaned
     df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
@@ -157,7 +167,7 @@ if 'df1_cleaned' in st.session_state:
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
 # Run predictions for all models
-if st.sidebar.button("Run Forecast"):
+if st.session_state.section == "prediction_results" and st.sidebar.button("Run Forecast"):
     st.success("Running Forecast for all models...")
 
     # Define the features for prediction
@@ -223,7 +233,7 @@ if st.sidebar.button("Run Forecast"):
     
     # Provide the download links
     create_download_link(df_predicted, "prediction_results.csv")
-    create_download_link(features_discrete, "technical_indicators.csv")
+    create_download_link(df1_cleaned, "technical_indicators.csv")
     create_download_link(df_trend, "trend_data.csv")
 
     # Plot Actual vs Predicted (All Models)
