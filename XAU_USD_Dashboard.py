@@ -181,14 +181,25 @@ def run_forecast(df, models):
     df["Random_Forest_Predicted"] = rf_pred
     df["SVM_Predicted"] = svm_pred
 
+    # Store predicted data in session_state to maintain state across app reruns
     st.session_state.df_predicted = df
     return df
 
 # Visualization
 def plot_predictions(df):
+    # Access the data stored in session_state to ensure the predictions are available
+    if 'df_predicted' not in st.session_state:
+        st.error("Predictions not found. Please run the forecast first.")
+        return
+
+    df = st.session_state.df_predicted
+
     # Check if the necessary columns exist in the DataFrame
-    if 'Trend_Close' not in df or 'LightGBM_Predicted' not in df or 'Random_Forest_Predicted' not in df or 'SVM_Predicted' not in df:
-        st.error("Missing required columns for prediction visualization.")
+    required_columns = ['Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    
+    if missing_columns:
+        st.error(f"Missing required columns for prediction visualization: {', '.join(missing_columns)}")
         return
 
     df_predicted = df[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']]
