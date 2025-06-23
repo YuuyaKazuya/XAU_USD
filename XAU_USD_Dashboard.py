@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
-import io
 
 # Set the page layout to wide
 st.set_page_config(layout="wide")
@@ -133,6 +130,10 @@ if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicator
     # Create a CSV for download
     def create_download_link(df, filename):
         csv = df.to_csv(index=False)
+        
+        # Saving the predictions in session state so they persist after the download
+        st.session_state.downloaded_data = df
+        
         return st.download_button(
             label=f"Download {filename}",
             data=csv,
@@ -169,15 +170,6 @@ if 'df1_cleaned' in st.session_state:
     st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
     # Create a CSV for download
-    def create_download_link(df, filename):
-        csv = df.to_csv(index=False)
-        return st.download_button(
-            label=f"Download {filename}",
-            data=csv,
-            file_name=filename,
-            mime='text/csv'
-        )
-        
     create_download_link(df_trend, "trend_data.csv")
 
 # Run predictions for all models
@@ -235,17 +227,6 @@ if st.sidebar.button("Run Forecast"):
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
 
     # Create downloadable links for prediction, technical indicators, and trends
-    # Create a CSV for download
-    def create_download_link(df, filename):
-        csv = df.to_csv(index=False)
-        return st.download_button(
-            label=f"Download {filename}",
-            data=csv,
-            file_name=filename,
-            mime='text/csv'
-        )
-    
-    # Provide the download links
     create_download_link(df_predicted, "prediction_results.csv")
 
     # Plot Actual vs Predicted (All Models)
