@@ -1,6 +1,6 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
 import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
 
@@ -20,256 +20,298 @@ The models predict future price movements based on historical data and technical
 For historical forex data, visit [ForexSB](https://forexsb.com/historical-forex-data).
 """)
 
-# Load the pre-trained models
-def load_models():
-    lgb_model_path = "best_lgb_discrete.pkl"
-    rf_model_path = "best_rf_discrete.pkl"
-    svm_model_path = "best_svm_discrete.pkl"
-
-    lgb_model = joblib.load(lgb_model_path)
-    rf_model = joblib.load(rf_model_path)
-    svm_model = joblib.load(svm_model_path)
-    
-    return lgb_model, rf_model, svm_model
-
-lgb_model, rf_model, svm_model = load_models()
-
 # User Guide Section with collapsible expander
-def display_user_guide():
-    with st.expander("📖 User Guide"):
-        st.markdown("""
-        ### How to Use the Dashboard:
-        1. **Upload Your Dataset**:
-           - Click on the **"Upload CSV File"** button on the sidebar to upload your historical XAU/USD dataset.
-           - The file should contain the following columns: Date, Open, High, Low, Close, Volume.
+with st.expander("📖 User Guide"):
+    st.markdown("""
+    ### How to Use the Dashboard:
 
-        2. **Generate Technical Indicators**:
-           - Once the dataset is uploaded, click the **"Generate Technical Indicators"** button to calculate key technical indicators like SMA, WMA, RSI, MACD, and more. This step will add these indicators to your dataset.
+    1. **Upload Your Dataset**:
+       - Click on the **"Upload CSV File"** button on the sidebar to upload your historical XAU/USD dataset.
+       - The file should contain the following columns: Date, Open, High, Low, Close, Volume.
 
-        3. **View Cleaned Data**:
-           - After generating the technical indicators, you will see the cleaned data along with the newly added columns of technical indicators.
+    2. **Generate Technical Indicators**:
+       - Once the dataset is uploaded, click the **"Generate Technical Indicators"** button to calculate key technical indicators like SMA, WMA, RSI, MACD, and more. This step will add these indicators to your dataset.
 
-        4. **Run Forecast**:
-           - To predict the price movement, click the **"Run Forecast"** button on the sidebar.
-           - The models will predict the trend of the XAU/USD price using the generated technical indicators.
-           - You can view the prediction results for **LightGBM**, **Random Forest**, and **SVM** models, along with their accuracy.
+    3. **View Cleaned Data**:
+       - After generating the technical indicators, you will see the cleaned data along with the newly added columns of technical indicators.
 
-        5. **Visualize Predictions**:
-           - View the comparison between **actual** and **predicted** trends for each model in the interactive chart below.
+    4. **Run Forecast**:
+       - To predict the price movement, click the **"Run Forecast"** button on the sidebar.
+       - The models will predict the trend of the XAU/USD price using the generated technical indicators.
+       - You can view the prediction results for **LightGBM**, **Random Forest**, and **SVM** models, along with their accuracy.
 
-        ### How to Interpret Results:
-        - **Trend (Up/Down)**: 
-           - If the **"Trend"** value is **1**, it means the price movement is predicted to go **up**.
-           - If the **"Trend"** value is **-1**, it means the price movement is predicted to go **down**.
-           
-        - **Accuracy**:
-           - The **"Correct"** column next to each model indicates whether the model correctly predicted the trend for that day: **✔️** for correct and **❌** for incorrect.
-        """)
+    5. **Visualize Predictions**:
+       - View the comparison between **actual** and **predicted** trends for each model in the interactive chart below.
 
-# File Upload
-def upload_file():
-    uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
-    if uploaded_file:
-        df1 = pd.read_csv(uploaded_file)
-        st.subheader("Uploaded Data")
-        st.subheader("First Rows of the Dataset")
-        st.dataframe(df1.head())
-        st.subheader("Last Rows of the Dataset")
-        st.dataframe(df1.tail())
+    ### How to Interpret Results:
+    - **Trend (Up/Down)**: 
+       - If the **"Trend"** value is **1**, it means the price movement is predicted to go **up**.
+       - If the **"Trend"** value is **-1**, it means the price movement is predicted to go **down**.
+       
+    - **Accuracy**:
+       - The **"Correct"** column next to each model indicates whether the model correctly predicted the trend for that day: **✔️** for correct and **❌** for incorrect.
 
-        # Store the uploaded dataset in session_state for further processing
-        st.session_state.df1 = df1
-    return df1 if uploaded_file else None
+    For any issues, check the error messages shown above the chart or dataset.
+    """)
+
+# Load the pre-trained models
+lgb_model_path = "best_lgb_discrete.pkl"
+rf_model_path = "best_rf_discrete.pkl"
+svm_model_path = "best_svm_discrete.pkl"
+
+lgb_model = joblib.load(lgb_model_path)
+rf_model = joblib.load(rf_model_path)
+svm_model = joblib.load(svm_model_path)
+
+st.success("✅ All Pre-trained Models Loaded")
+
+# Sidebar
+st.sidebar.header("Upload Your Dataset")
+uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
+
+# Display uploaded data
+if uploaded_file:
+    df1 = pd.read_csv(uploaded_file)
+    st.subheader("Uploaded Data")
+    st.subheader("First Rows of the Dataset")
+    st.dataframe(df1.head())
+    st.subheader("Last Rows of the Dataset")
+    st.dataframe(df1.tail())
+
+    # Store the uploaded dataset in session_state for further processing
+    st.session_state.df1 = df1
 
 # Generate Technical Indicators
-def generate_technical_indicators(df):
+if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
     st.warning("Generating Technical Indicators... Please wait.")
     
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df1 = st.session_state.df1
+    df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
 
     # Calculate technical indicators
-    df['SMA'] = df['Close'].rolling(window=14).mean()
-    df['WMA'] = df['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
-    df['Momentum'] = df['Close'].diff(4)
+    df1['SMA'] = df1['Close'].rolling(window=14).mean()
+    df1['WMA'] = df1['Close'].rolling(window=14).apply(lambda x: np.dot(x, np.arange(1, len(x)+1))/np.sum(np.arange(1, len(x)+1)), raw=True)
+    df1['Momentum'] = df1['Close'].diff(4)
 
-    high_14 = df['High'].rolling(window=14).max()
-    low_14 = df['Low'].rolling(window=14).min()
-    df['StochasticK'] = (df['Close'] - low_14) / (high_14 - low_14) * 100
-    df['StochasticD'] = df['StochasticK'].rolling(window=3).mean()
+    high_14 = df1['High'].rolling(window=14).max()
+    low_14 = df1['Low'].rolling(window=14).min()
+    df1['StochasticK'] = (df1['Close'] - low_14) / (high_14 - low_14) * 100
+    df1['StochasticD'] = df1['StochasticK'].rolling(window=3).mean()
 
-    delta = df['Close'].diff(1)
+    delta = df1['Close'].diff(1)
     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
     rs = gain / loss
-    df['RSI'] = 100 - (100 / (1 + rs))
+    df1['RSI'] = 100 - (100 / (1 + rs))
 
-    df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
-    df['MACD_signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+    df1['MACD'] = df1['Close'].ewm(span=12, adjust=False).mean() - df1['Close'].ewm(span=26, adjust=False).mean()
+    df1['MACD_signal'] = df1['MACD'].ewm(span=9, adjust=False).mean()
 
-    df['WilliamsR'] = (high_14 - df['Close']) / (high_14 - low_14) * -100
-    df['A_D'] = df['High'].diff(1) - df['Low'].diff(1)
-    df['A_D'] = df['A_D'].rolling(window=14).mean()
+    df1['WilliamsR'] = (high_14 - df1['Close']) / (high_14 - low_14) * -100
+    df1['A_D'] = df1['High'].diff(1) - df1['Low'].diff(1)
+    df1['A_D'] = df1['A_D'].rolling(window=14).mean()
 
-    tp = (df['High'] + df['Low'] + df['Close']) / 3
+    tp = (df1['High'] + df1['Low'] + df1['Close']) / 3
     sma_tp = tp.rolling(window=14).mean()
     mean_deviation = (tp - sma_tp).abs().rolling(window=14).mean()
-    df['CCI'] = (tp - sma_tp) / (0.015 * mean_deviation)
+    df1['CCI'] = (tp - sma_tp) / (0.015 * mean_deviation)
 
     st.success("✅ Technical Indicators Generated!")
 
     # Clean NaN values
     st.warning("Cleaning NaN values from the dataset...")
-    df_cleaned = df.dropna()
+    df1_cleaned = df1.dropna()
 
-    st.session_state.df_cleaned = df_cleaned
+    st.session_state.df1_cleaned = df1_cleaned
+
     st.subheader("Cleaned Data with Technical Indicators")
-    st.dataframe(df_cleaned.head(50))
+    st.dataframe(df1_cleaned.head(50))
 
-# Convert Technical Indicators into Trends (using the approach you specified)
-def convert_to_trends(df):
-    df['Trend'] = np.where(df['Close'] > df['Close'].shift(1), 1, 
-                           np.where(df['Close'] < df['Close'].shift(1), -1, 0))
+# Convert Close Price into Trend (Up/Down)
+if 'df1_cleaned' in st.session_state:
+    df1_cleaned = st.session_state.df1_cleaned
+    df1_cleaned['Trend_Close'] = df1_cleaned['Close'].diff().apply(lambda x: 1 if x > 0 else -1)
 
-    df['Trend_SMA'] = np.where(df['Close'] > df['SMA'], 1, 
-                               np.where(df['Close'] <= df['SMA'], -1, 0))
+    # Convert other technical indicators into trends
+    df1_cleaned['Trend_SMA'] = df1_cleaned['SMA'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_WMA'] = df1_cleaned['WMA'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_Momentum'] = df1_cleaned['Momentum'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_StochasticK'] = df1_cleaned['StochasticK'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_StochasticD'] = df1_cleaned['StochasticD'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_RSI'] = df1_cleaned['RSI'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_MACD'] = df1_cleaned['MACD'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_WilliamsR'] = df1_cleaned['WilliamsR'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_A_D'] = df1_cleaned['A_D'].diff().apply(lambda x: 1 if x > 0 else -1)
+    df1_cleaned['Trend_CCI'] = df1_cleaned['CCI'].diff().apply(lambda x: 1 if x > 0 else -1)
 
-    df['Trend_WMA'] = np.where(df['Close'] > df['WMA'], 1, 
-                               np.where(df['Close'] <= df['WMA'], -1, 0))
+    df_trend = df1_cleaned[['Date', 'Trend_Close', 
+                            'Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 
+                            'Trend_StochasticK', 'Trend_StochasticD', 'Trend_RSI', 
+                            'Trend_MACD', 'Trend_WilliamsR', 'Trend_A_D', 'Trend_CCI']]
 
-    df['Trend_Momentum'] = np.where(df['Momentum'] > 0, 1, 
-                                    np.where(df['Momentum'] <= 0, -1, 0))
-
-    df['Trend_StochasticK'] = np.where(df['StochasticK'] > df['StochasticK'].shift(1), 1, 
-                                       np.where(df['StochasticK'] <= df['StochasticK'].shift(1), -1, 0))
-
-    df['Trend_StochasticD'] = np.where(df['StochasticD'] > df['StochasticD'].shift(1), 1, 
-                                       np.where(df['StochasticD'] <= df['StochasticD'].shift(1), -1, 0))
-
-    df['Trend_RSI'] = np.where(df['RSI'] < 30, 1,
-                                np.where(df['RSI'] > 70, -1,
-                                np.where(df['RSI'] > df['RSI'].shift(1), 1,
-                                np.where(df['RSI'] <= df['RSI'].shift(1), -1, 0))))
-
-    df['Trend_MACD'] = np.where(df['MACD'] > df['MACD'].shift(1), 1, 
-                                np.where(df['MACD'] <= df['MACD'].shift(1), -1, 0))
-
-    df['Trend_WilliamsR'] = np.where(df['WilliamsR'] > df['WilliamsR'].shift(1), 1, 
-                                     np.where(df['WilliamsR'] <= df['WilliamsR'].shift(1), -1, 0))
-
-    df['Trend_A_D'] = np.where(df['A_D'] > df['A_D'].shift(1), 1, 
-                               np.where(df['A_D'] <= df['A_D'].shift(1), -1, 0))
-
-    df['Trend_CCI'] = np.where(df['CCI'] > df['CCI'].shift(1), 1, 
-                               np.where(df['CCI'] <= df['CCI'].shift(1), -1, 0))
-
+    # Display the trend data table
     st.subheader("Data with Trends")
-    st.dataframe(df.head(100))  # Display the first 100 rows
+    st.dataframe(df_trend.head(100))  # Display top 100 rows with trends only
 
-    return df
+# Run predictions for all models
+if st.sidebar.button("Run Forecast"):
+    st.success("Running Forecast for all models...")
 
-# Prediction
-def run_forecast(df, models):
-    features_discrete = df[['Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 'Trend_StochasticK', 
-                            'Trend_StochasticD', 'Trend_RSI', 'Trend_MACD', 'Trend_WilliamsR', 
-                            'Trend_A_D', 'Trend_CCI']]
+    # Define the features for prediction
+    features_discrete = df1_cleaned[['Trend_SMA', 'Trend_WMA', 'Trend_Momentum', 'Trend_StochasticK', 
+                                    'Trend_StochasticD', 'Trend_RSI', 'Trend_MACD', 'Trend_WilliamsR', 
+                                    'Trend_A_D', 'Trend_CCI']]  # feature columns
 
-    lgb_pred = models[0].predict(features_discrete)
-    rf_pred = models[1].predict(features_discrete)
-    svm_pred = models[2].predict(features_discrete)
+    # Make predictions for each model
+    lgb_pred = lgb_model.predict(features_discrete)
+    rf_pred = rf_model.predict(features_discrete)
+    svm_pred = svm_model.predict(features_discrete)
 
-    df["LightGBM_Predicted"] = lgb_pred
-    df["Random_Forest_Predicted"] = rf_pred
-    df["SVM_Predicted"] = svm_pred
+    # Store the predictions in the dataframe
+    df1_cleaned["LightGBM_Predicted"] = lgb_pred
+    df1_cleaned["Random_Forest_Predicted"] = rf_pred
+    df1_cleaned["SVM_Predicted"] = svm_pred
 
-    # Store predicted data in session_state to maintain state across app reruns
-    st.session_state.df_predicted = df
-    return df
+    st.subheader("Prediction Results (Actual vs Predicted Trend)")
 
-# Visualization
-def plot_predictions(df):
-    # Access the data stored in session_state to ensure the predictions are available
-    if 'df_predicted' not in st.session_state:
-        st.error("Predictions not found. Please run the forecast first.")
-        return
+    # Create a new dataframe showing only the actual trend and predicted trends
+    df_predicted = df1_cleaned[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']] 
 
-    df = st.session_state.df_predicted
-
-    # Check if the necessary columns exist in the DataFrame
-    required_columns = ['Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']
-    missing_columns = [col for col in required_columns if col not in df.columns]
+    # Add correctness check directly to predicted columns with a gap between predicted value and tick
+    df_predicted['LightGBM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['LightGBM_Predicted'] == 1) | 
+                                                (df_predicted['Trend_Close'] == -1) & (df_predicted['LightGBM_Predicted'] == -1), '✔️', '❌')
     
-    if missing_columns:
-        st.error(f"Missing required columns for prediction visualization: {', '.join(missing_columns)}")
-        return
+    df_predicted['Random_Forest_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['Random_Forest_Predicted'] == 1) | 
+                                                      (df_predicted['Trend_Close'] == -1) & (df_predicted['Random_Forest_Predicted'] == -1), '✔️', '❌')
+    
+    df_predicted['SVM_Correct'] = np.where((df_predicted['Trend_Close'] == 1) & (df_predicted['SVM_Predicted'] == 1) | 
+                                            (df_predicted['Trend_Close'] == -1) & (df_predicted['SVM_Predicted'] == -1), '✔️', '❌')
 
-    df_predicted = df[['Date', 'Trend_Close', 'LightGBM_Predicted', 'Random_Forest_Predicted', 'SVM_Predicted']]
+    # Create separate columns for predicted values and ticks
+    df_predicted['LightGBM_Predicted_Value'] = df_predicted['LightGBM_Predicted']
+    df_predicted['Random_Forest_Predicted_Value'] = df_predicted['Random_Forest_Predicted']
+    df_predicted['SVM_Predicted_Value'] = df_predicted['SVM_Predicted']
+
+    # Now select the relevant columns for display (predicted value and correctness tick side by side)
+    df_predicted = df_predicted[['Date', 'Trend_Close', 
+                                 'LightGBM_Predicted_Value', 'LightGBM_Correct', 
+                                 'Random_Forest_Predicted_Value', 'Random_Forest_Correct', 
+                                 'SVM_Predicted_Value', 'SVM_Correct']]
+
+    # Update the column headers to combine the "Predicted" and "Correct" into one header
+    df_predicted.columns = ['Date', 'Actual Trend', 
+                            'LightGBM (Predicted)', 'LightGBM (Correct)', 
+                            'Random Forest (Predicted)', 'Random Forest (Correct)', 
+                            'SVM (Predicted)', 'SVM (Correct)']
+
+    # Display the filtered dataframe with actual and predicted trends side by side with correctness
+    st.dataframe(df_predicted.head(100))  # Display top 10 predictions
+
+    # Plot Actual vs Predicted (All Models)
+    st.subheader(" Actual vs Predicted Prices (All Models)")
 
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
-        x=df['Date'],
-        y=df['Trend_Close'],
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Trend_Close'],
         mode='markers',
         name='Actual Price',
         marker=dict(color='black', size=8, symbol='circle')
     ))
 
     fig.add_trace(go.Scatter(
-        x=df['Date'],
-        y=df['LightGBM_Predicted'],
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['LightGBM_Predicted'],
         mode='markers',
         name='LightGBM Predicted',
         marker=dict(color='blue', size=6, symbol='diamond')
     ))
 
     fig.add_trace(go.Scatter(
-        x=df['Date'],
-        y=df['Random_Forest_Predicted'],
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['Random_Forest_Predicted'],
         mode='markers',
         name='Random Forest Predicted',
         marker=dict(color='red', size=6, symbol='square')
     ))
 
     fig.add_trace(go.Scatter(
-        x=df['Date'],
-        y=df['SVM_Predicted'],
+        x=df1_cleaned['Date'],
+        y=df1_cleaned['SVM_Predicted'],
         mode='markers',
         name='SVM Predicted',
         marker=dict(color='green', size=6, symbol='triangle-up')
     ))
 
     fig.update_layout(
-        title='📊 Actual vs Predicted XAU/USD Price Movements',
-        xaxis_title='Date',
-        yaxis_title='Price',
-        legend_title='Model',
-        hovermode='x unified',
-        template='plotly_white',
-        height=1000,
-        width=1500
-    )
+            title='📊 Actual vs Predicted XAU/USD Price Movements',
+            xaxis_title='Date',
+            yaxis_title='Price',
+            legend_title='Model',
+            hovermode='x unified',
+            template='plotly_white',  # This sets the plot background to white
+            height=1000,
+            width=1500,
+            plot_bgcolor='white',  # Ensures the background of the plot itself is white
+            paper_bgcolor='white',  # Ensures the area surrounding the plot is also white
+            title_font=dict(
+                family="Arial, sans-serif",  # Set font family for title
+                size=40,  # Set font size for title
+                color="black"  # Set title text color to black
+            ),
+            xaxis=dict(
+                title='Date',
+                title_font=dict(
+                    family="Arial, sans-serif",  # Set font family for x-axis title
+                    size=14,  # Set font size for x-axis title
+                    color="black"  # Set x-axis title text color to black
+                ),
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for x-axis ticks
+                    size=12,  # Set font size for x-axis ticks
+                    color="black"  # Set x-axis tick text color to black
+                ),
+                rangeselector=dict(
+                    buttons=list([
+
+                        dict(count=1, label="1d", step="day", stepmode="backward"),
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),  # Added 1 year button (backward)
+                        dict(step="all")
+                    ])
+
+
+                ),
+
+                rangeslider=dict(visible=True),
+                type="date",
+                tickangle=45,  # Optional: Rotates the ticks for better visibility
+            ),
+            yaxis=dict(
+                title='Price',
+                title_font=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis title
+                    size=14,  # Set font size for y-axis title
+                    color="black"  # Set y-axis title text color to black
+                ),
+                tickfont=dict(
+                    family="Arial, sans-serif",  # Set font family for y-axis ticks
+                    size=12,  # Set font size for y-axis ticks
+                    color="black"  # Set y-axis tick text color to black
+                )
+            ),
+            legend_title_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend title
+                size=14,  # Set font size for legend title
+                color="black"  # Set legend title text color to black
+            ),
+            legend_font=dict(
+                family="Arial, sans-serif",  # Set font family for legend items
+                size=12,  # Set font size for legend items
+                color="black"  # Set legend text color to black
+            )
+        )
 
     st.plotly_chart(fig)
-
-# Main Code Flow
-def main():
-    display_user_guide()
-
-    uploaded_file = upload_file()
-    
-    if uploaded_file is not None:
-        df1 = uploaded_file
-        if st.sidebar.button("Generate Technical Indicators"):
-            generate_technical_indicators(df1)
-
-        if 'df_cleaned' in st.session_state:
-            df_cleaned = st.session_state.df_cleaned
-            convert_to_trends(df_cleaned)
-
-        if st.sidebar.button("Run Forecast"):
-            st.success("Running Forecast for all models...")
-            df_with_predictions = run_forecast(df_cleaned, [lgb_model, rf_model, svm_model])
-            plot_predictions(df_with_predictions)
-
-if __name__ == "__main__":
-    main()
