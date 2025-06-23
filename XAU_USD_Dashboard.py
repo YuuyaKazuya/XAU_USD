@@ -318,6 +318,7 @@ if page == "Prediction":
 
         st.plotly_chart(fig)
 
+
 elif page == "Performance Metrics":
     st.subheader("Performance Metrics for All Models")
 
