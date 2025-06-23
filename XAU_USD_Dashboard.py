@@ -5,6 +5,7 @@ import seaborn as sns
 import numpy as np
 import joblib  # For loading the pre-trained models
 import plotly.graph_objects as go
+import io
 
 # Set the page layout to wide
 st.set_page_config(layout="wide")
@@ -208,6 +209,22 @@ if st.sidebar.button("Run Forecast"):
 
     # Display the filtered dataframe with actual and predicted trends side by side with correctness
     st.dataframe(df_predicted.head(100))  # Display top 10 predictions
+
+    # Create downloadable links for prediction, technical indicators, and trends
+    # Create a CSV for download
+    def create_download_link(df, filename):
+        csv = df.to_csv(index=False)
+        return st.download_button(
+            label=f"Download {filename}",
+            data=csv,
+            file_name=filename,
+            mime='text/csv'
+        )
+    
+    # Provide the download links
+    create_download_link(df_predicted, "prediction_results.csv")
+    create_download_link(df1_cleaned, "technical_indicators.csv")
+    create_download_link(df_trend, "trend_data.csv")
 
     # Plot Actual vs Predicted (All Models)
     st.subheader(" Actual vs Predicted Prices (All Models)")
