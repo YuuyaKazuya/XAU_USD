@@ -86,14 +86,6 @@ if uploaded_file:
         if len(df1.columns) >= 6:
             df1.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'] + list(df1.columns[6:])
 
-        # Check for any missing or invalid dates before converting
-        st.write("Preview of the Date column:")
-        st.write(df1['Date'].head())
-
-        # Display raw values of Date column before conversion
-        st.write("Raw Date values before conversion:")
-        st.write(df1['Date'].head(10))  # Display first 10 rows of Date column
-
         # Clean the Date column: Replace invalid dates with NaT (Not a Time) and drop rows with NaT in 'Date'
         df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
         df1 = df1.dropna(subset=['Date'])  # Drop rows where 'Date' is NaT (invalid dates)
