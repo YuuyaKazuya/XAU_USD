@@ -77,15 +77,14 @@ if uploaded_file:
         # Ensure there are no leading or trailing spaces in column names
         df1.columns = df1.columns.str.strip()
 
-        # If the first column is Date, rename it and assign proper column names
-        if len(df1.columns) >= 6:
-            df1.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'] + list(df1.columns[6:])
+        # Add a new row at the top with the values 'Date', 'Open', 'High', 'Low', 'Close', 'Volume'
+        new_row = pd.DataFrame([['Date', 'Open', 'High', 'Low', 'Close', 'Volume']], columns=df1.columns)
 
-        # Ensure that Date column is in the correct format
-        df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
+        # Concatenate the new row at the top of the dataframe
+        df1 = pd.concat([new_row, df1], ignore_index=True)
 
         # Display the first and last rows of the dataset
-        st.subheader("Uploaded Data")
+        st.subheader("Uploaded Data with New Row Added")
         st.subheader("First Rows of the Dataset")
         st.dataframe(df1.head())
         st.subheader("Last Rows of the Dataset")
