@@ -17,7 +17,9 @@ This dashboard forecasts the XAU/USD exchange rate trends using three different 
 
 The models predict future price movements based on historical data and technical indicators.
 
-For historical forex data, visit [ForexSB](https://forexsb.com/historical-forex-data) or download here [Dataset](https://www.mediafire.com/folder/ovd09qjbl3o1q/Dataset).
+For historical forex data, visit [ForexSB](https://forexsb.com/historical-forex-data).
+
+or download here [Dataset](https://www.mediafire.com/folder/ovd09qjbl3o1q/Dataset).
 """) 
 
 # User Guide Section with collapsible expander
