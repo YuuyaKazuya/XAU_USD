@@ -86,11 +86,20 @@ if uploaded_file:
         if len(df1.columns) >= 6:
             df1.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'] + list(df1.columns[6:])
 
-        # Ensure that Date column is in the correct format
-        df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
+        # Check for any missing or invalid dates before converting
+        st.write("Preview of the Date column:")
+        st.write(df1['Date'].head())
 
-        # Display the first and last rows of the dataset
-        st.subheader("Uploaded Data")
+        # Display raw values of Date column before conversion
+        st.write("Raw Date values before conversion:")
+        st.write(df1['Date'].head(10))  # Display first 10 rows of Date column
+
+        # Clean the Date column: Replace invalid dates with NaT (Not a Time) and drop rows with NaT in 'Date'
+        df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
+        df1 = df1.dropna(subset=['Date'])  # Drop rows where 'Date' is NaT (invalid dates)
+
+        # Display the first and last rows of the cleaned dataset
+        st.subheader("Uploaded Data After Cleaning")
         st.subheader("First Rows of the Dataset")
         st.dataframe(df1.head())
         st.subheader("Last Rows of the Dataset")
