@@ -71,15 +71,31 @@ uploaded_file = st.sidebar.file_uploader("Upload a CSV File", type=["csv"])
 
 # Display uploaded data
 if uploaded_file:
-    df1 = pd.read_csv(uploaded_file)
-    st.subheader("Uploaded Data")
-    st.subheader("First Rows of the Dataset")
-    st.dataframe(df1.head())
-    st.subheader("Last Rows of the Dataset")
-    st.dataframe(df1.tail())
+    try:
+        df1 = pd.read_csv(uploaded_file)
 
-    # Store the uploaded dataset in session_state for further processing
-    st.session_state.df1 = df1
+        # Ensure there are no leading or trailing spaces in column names
+        df1.columns = df1.columns.str.strip()
+
+        # If the first column is Date, rename it and assign proper column names
+        if len(df1.columns) >= 6:
+            df1.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'] + list(df1.columns[6:])
+
+        # Ensure that Date column is in the correct format
+        df1['Date'] = pd.to_datetime(df1['Date'], errors='coerce')
+
+        # Display the first and last rows of the dataset
+        st.subheader("Uploaded Data")
+        st.subheader("First Rows of the Dataset")
+        st.dataframe(df1.head())
+        st.subheader("Last Rows of the Dataset")
+        st.dataframe(df1.tail())
+
+        # Store the uploaded dataset in session_state for further processing
+        st.session_state.df1 = df1
+
+    except Exception as e:
+        st.error(f"Error: {e}")
 
 # Generate Technical Indicators
 if 'df1' in st.session_state and st.sidebar.button("Generate Technical Indicators"):
